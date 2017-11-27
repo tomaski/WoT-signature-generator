@@ -4,7 +4,6 @@ require 'functions_lib.php';
 
 class signature 
 {
-	// private $player_id;
 	private $player_data;
 	private $account_tank_stats;
 	private $exp_tank_stats;
@@ -13,6 +12,7 @@ class signature
 
 	private $wargaming_id;
 	private $player_nickname;
+	private $personal_rating;
 	private $battles;
     private $win_rate;
     private $hits_percents;
@@ -54,18 +54,19 @@ class signature
 	private $battles_td;
 	private $battles_spg;
 
-	private $iii;
+	private $best_tier6;
+	private $best_tier8;
+	private $best_tier10;
 
 	public function __construct($player_id){
-		// $this->player_id   				= getPlayerID();
 		$this->player_data 				= getPlayerData($player_id);
 		$this->account_tank_stats		= getTankStatistics($player_id);
 		$this->exp_tank_stats			= getExpectedTankValues();
 		$this->clan_data				= getClanData($this->player_data->clan_id);
 		$this->tank_details 			= getTankDetails();
-
 		$this->player_nickname			= $this->player_data->nickname;
 		$this->wargaming_id				= $player_id;
+		$this->personal_rating			= $this->player_data->global_rating;
 		$this->battles                  = $this->player_data->statistics->all->battles; //Total battles
 	    $this->win_rate                 = (($this->player_data->statistics->all->wins / $this->battles) * 100); //Average win rate
 	    $this->hits_percents			= $this->player_data->statistics->all->hits / $this->player_data->statistics->all->shots * 100;
@@ -86,34 +87,58 @@ class signature
 		$this->battles_ht				= 0;
 		$this->battles_td				= 0;
 		$this->battles_spg				= 0;
-	    $this->iii 						= 0;
+		$this->WN8						= 0;
+		$this->best_tier6				= (object)array('name' => '', 'wn8' => 0);
+		$this->best_tier8				= (object)array('name' => '', 'wn8' => 0);
+		$this->best_tier10				= (object)array('name' => '', 'wn8' => 0);
 	    $this->avgTier 					= 0;
 
 
 		foreach($this->account_tank_stats as $this->tank_stats){
 	        $this->tank_id                	= $this->tank_stats->tank_id;
 	        $this->tank_battles           	= $this->tank_stats->all->battles;
-	        $this->avgTier 					+= $this->tank_details->{$this->tank_id}->tier * $this->tank_battles;
+			$this->avgTier 					+= $this->tank_details->{$this->tank_id}->tier * $this->tank_battles;
 
         	switch ($this->tank_details->{$this->tank_id}->type) {
             	case 'lightTank':
-            		$this->battles_lt 	+= $this->tank_battles;
+					$this->battles_lt 	+= $this->tank_battles;
             		break;
             	case 'mediumTank':
-            		$this->battles_mt 	+= $this->tank_battles;
+					$this->battles_mt 	+= $this->tank_battles;
             		break;
             	case 'heavyTank':
-            		$this->battles_ht 	+= $this->tank_battles;
+					$this->battles_ht 	+= $this->tank_battles;
             		break;
             	case 'AT-SPG':
-            		$this->battles_td 	+= $this->tank_battles;
+					$this->battles_td 	+= $this->tank_battles;
             		break;
             	case 'SPG':
-            		$this->battles_spg 	+= $this->tank_battles;
+					$this->battles_spg 	+= $this->tank_battles;
             		break;
-            	
             	default:
-            		# code...
+            		break;
+			}
+			
+			switch ($this->tank_details->{$this->tank_id}->tier) {
+				case 6:
+					if($this->tank_stats->wn8 > $this->best_tier6->wn8){
+						$this->best_tier6->name = $this->tank_details->{$this->tank_id}->short_name;
+						$this->best_tier6->wn8  = $this->tank_stats->wn8;
+					}
+            		break;
+            	case 8:
+					if($this->tank_stats->wn8 > $this->best_tier8->wn8){
+						$this->best_tier8->name = $this->tank_details->{$this->tank_id}->short_name;
+						$this->best_tier8->wn8  = $this->tank_stats->wn8;
+					}
+            		break;
+            	case 10:
+					if($this->tank_stats->wn8 > $this->best_tier10->wn8){
+						$this->best_tier10->name = $this->tank_details->{$this->tank_id}->short_name;
+						$this->best_tier10->wn8  = $this->tank_stats->wn8;
+					}
+            		break;
+            	default:
             		break;
             }
 
@@ -123,10 +148,6 @@ class signature
 	            $this->expected_frag       	+= 		 $this->exp_tank_stats[$this->tank_id]->expFrag * 	 $this->tank_battles;
 	            $this->expected_def        	+= 		 $this->exp_tank_stats[$this->tank_id]->expDef * 	 $this->tank_battles;
 	            $this->expected_win        	+= 0.01 * $this->exp_tank_stats[$this->tank_id]->expWinRate * $this->tank_battles;
-
-	            
-
-
 	        }
 	    }
 
@@ -173,18 +194,16 @@ class signature
 			case 'hitratio':
 				return round($this->hits_percents, 2);
 				break;
-			case 'r_winrate':
-				// return $this->
-				break;
 			case 'winrate':
 				return round($this->wins / $this->battles * 100, 2);
-				break;
-			case 'r_WN8':
-				// return $this->
 				break;
 			case 'WN8':
 				return round($this->WN8);
 				break;
+			case 'personal_rating':
+				return $this->personal_rating;
+				break;
+			// clan related data
 			case 'clan_name':
 				return $this->clan_data->tag;
 				break;
@@ -195,11 +214,6 @@ class signature
 				return $this->clan_data->color;
 				break;
 			case 'clan_rank':
-				// echo "<pre>";
-				// 	print_r($this->clan_data->members);
-				// echo"</pre>";
-				// break;
-				
 				foreach ($this->clan_data->members as $member) {
 					// echo $member->account_id ."-". $this->wargaming_id ."<br />";
 					if ($member->account_id == $this->wargaming_id){
@@ -207,6 +221,7 @@ class signature
 					}
 				}
 				break;
+			// total battles per tank class
 			case 'btl_lt':
 				return $this->battles_lt;
 				break;
@@ -221,6 +236,25 @@ class signature
 				break;
 			case 'btl_spg':
 				return $this->battles_spg;
+				break;
+			// best tank per each SH tier
+			case 'best_tier6_name':
+				return $this->best_tier6->name;
+				break;
+			case 'best_tier8_name':
+				return $this->best_tier8->name;
+				break;
+			case 'best_tier10_name':
+				return $this->best_tier10->name;
+				break;
+			case 'best_tier6_wn8':
+				return $this->best_tier6->wn8;
+				break;
+			case 'best_tier8_wn8':
+				return $this->best_tier8->wn8;
+				break;
+			case 'best_tier10_wn8':
+				return $this->best_tier10->wn8;
 				break;
 			default:
 				break;
