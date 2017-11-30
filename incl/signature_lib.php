@@ -1,6 +1,5 @@
 <?php
 
-require 'functions_lib.php';
 
 class signature 
 {
@@ -57,6 +56,7 @@ class signature
 	private $best_tier6;
 	private $best_tier8;
 	private $best_tier10;
+
 
 	public function __construct($player_id){
 		$this->player_data 				= getPlayerData($player_id);
@@ -205,7 +205,7 @@ class signature
 				break;
 			// clan related data
 			case 'clan_name':
-				return $this->clan_data->tag;
+				return "[".$this->clan_data->tag."]";
 				break;
 			case 'clan_icon':
 				return $this->clan_data->emblems->x64->portal;

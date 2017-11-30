@@ -1,8 +1,5 @@
 <?php
 
-require "config_incl.php";
-
-
 
 /**
  * a generic HTTP requester
@@ -47,13 +44,13 @@ function curlFetch($url)
  */	
 function getPlayerID($player_name)
 {
-	global $application_id, $API_base;
+	global $config;
 
-	$url = $API_base . "wot/account/list/?application_id={$application_id}&search={$player_name}";
+	$url          = $config['API']['URL'] . "wot/account/list/?application_id={$config['API']['ID']}&search={$player_name}";
 	$API_response = curlFetch($url);
-	$json = json_decode($API_response);
-
-	$account_id = $json->data[0]->account_id;
+	$json         = json_decode($API_response);
+	
+	$account_id   = $json->data[0]->account_id;
 
 	return $account_id;
 }
@@ -66,13 +63,13 @@ function getPlayerID($player_name)
  * @return JSON             	(player's whole JSON object)
  */	
 function getPlayerData($account_id){
-	global $application_id, $API_base;
+	global $config;
 
-	$url = $API_base . "wot/account/info/?application_id={$application_id}&account_id={$account_id}";
+	$url          = $config['API']['URL'] . "wot/account/info/?application_id={$config['API']['ID']}&account_id={$account_id}";
 	$API_response = curlFetch($url);
-	$json = json_decode($API_response);
-
-	$player_data = $json->data->$account_id;
+	$json         = json_decode($API_response);
+	
+	$player_data  = $json->data->$account_id;
 
 	return $player_data;
 }
@@ -85,13 +82,13 @@ function getPlayerData($account_id){
  * @return JSON             	(tanks' whole JSON object)
  */
 function getTankStatistics($account_id){
-	global $application_id, $API_base;
+	global $config;
 
-	$url = $API_base . "wot/tanks/stats/?application_id={$application_id}&account_id={$account_id}";
-	$API_response = curlFetch($url);
-	$json = json_decode($API_response);
-
-	$tank_stats = $json->data->$account_id;
+	$url            = $config['API']['URL'] . "wot/tanks/stats/?application_id={$config['API']['ID']}&account_id={$account_id}";
+	$API_response   = curlFetch($url);
+	$json           = json_decode($API_response);
+	
+	$tank_stats     = $json->data->$account_id;
 	$exp_tank_stats = getExpectedTankValues();
 
 	foreach($tank_stats as $tank){
@@ -108,12 +105,12 @@ function getTankStatistics($account_id){
  * @return JSON 		(tankopedia's JSON object)
  */
 function getTankDetails(){
-	global $application_id, $API_base;
+	global $config;
 
-	$url = $API_base . "wot/encyclopedia/vehicles/?application_id={$application_id}";
+	$url          = $config['API']['URL'] . "wot/encyclopedia/vehicles/?application_id={$config['API']['ID']}";
 	$API_response = curlFetch($url);
-	$json = json_decode($API_response);
-// echo $API_response."<br />";
+	$json         = json_decode($API_response);
+	
 	$tank_details = $json->data;
 
 	return $tank_details;
@@ -126,11 +123,11 @@ function getTankDetails(){
  * @return array 		(Returns expected stats for all known tanks.)
  */
 function getExpectedTankValues(){
-	// $url = "http://www.wnefficiency.net/exp/expected_tank_values_30.json";
-	$url = "https://static.modxvm.com/wn8-data-exp/json/wn8exp.json"; // switched to XVM expected tank values
-	$API_response = curlFetch($url);
-	$json = json_decode($API_response);
-	$temp = array_values($json->data);
+	// $url 		= "http://www.wnefficiency.net/exp/expected_tank_values_30.json";
+	$url            = "https://static.modxvm.com/wn8-data-exp/json/wn8exp.json"; // switched to XVM expected tank values
+	$API_response   = curlFetch($url);
+	$json           = json_decode($API_response);
+	$temp           = array_values($json->data);
 	$exp_tank_stats = [];
 
 	foreach ($temp as $key => $val) {
@@ -148,13 +145,13 @@ function getExpectedTankValues(){
  * @return JSON          	(clan's entire JSON object (if applicable). Returns false if player is not member of a clan)
  */
 function getClanData($clan_id){
-	global $application_id, $API_base;
+	global $config;
 
-	$url = $API_base . "wgn/clans/info/?application_id={$application_id}&clan_id={$clan_id}";
+	$url          = $config['API']['URL'] . "wgn/clans/info/?application_id={$config['API']['ID']}&clan_id={$clan_id}";
 	$API_response = curlFetch($url);
-	$json = json_decode($API_response);
-
-	$clan_data = $json->data->$clan_id;
+	$json         = json_decode($API_response);
+	
+	$clan_data    = $json->data->$clan_id;
 
 	return $clan_data;
 }
@@ -169,17 +166,18 @@ function getClanData($clan_id){
 * @return array or string 			(depending on second parameter. Returns False if invalid hex color value)
 */                                                                                                 
 function hex2RGB($hexStr, $returnAsString = false, $seperator = ',') {
-    $hexStr = preg_replace("/[^0-9A-Fa-f]/", '', $hexStr); // Gets a proper hex string
-    $rgbArray = array();
+	$hexStr   = preg_replace("/[^0-9A-Fa-f]/", '', $hexStr); // Gets a proper hex string
+	$rgbArray = array();
+
     if (strlen($hexStr) == 6) { //If a proper hex code, convert using bitwise operation. No overhead... faster
-        $colorVal = hexdec($hexStr);
-        $rgbArray['red'] = 0xFF & ($colorVal >> 0x10);
-        $rgbArray['green'] = 0xFF & ($colorVal >> 0x8);
-        $rgbArray['blue'] = 0xFF & $colorVal;
+		$colorVal          = hexdec($hexStr);
+		$rgbArray['red']   = 0xFF & ($colorVal >> 0x10);
+		$rgbArray['green'] = 0xFF & ($colorVal >> 0x8);
+		$rgbArray['blue']  = 0xFF & $colorVal;
     } elseif (strlen($hexStr) == 3) { //if shorthand notation, need some string manipulations
-        $rgbArray['red'] = hexdec(str_repeat(substr($hexStr, 0, 1), 2));
-        $rgbArray['green'] = hexdec(str_repeat(substr($hexStr, 1, 1), 2));
-        $rgbArray['blue'] = hexdec(str_repeat(substr($hexStr, 2, 1), 2));
+		$rgbArray['red']   = hexdec(str_repeat(substr($hexStr, 0, 1), 2));
+		$rgbArray['green'] = hexdec(str_repeat(substr($hexStr, 1, 1), 2));
+		$rgbArray['blue']  = hexdec(str_repeat(substr($hexStr, 2, 1), 2));
     } else {
         return false; //Invalid hex color code
     }
