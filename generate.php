@@ -20,7 +20,7 @@ function getClanIcon($icon_url){
     return $data;
 }
 
-make_signature(543282914);
+// make_signature(543282914);
 
 
 function make_signature($player_id){
@@ -136,14 +136,14 @@ function make_signature($player_id){
 }
 
 
-// $player_id = $_GET['id'];
+$player_id = $_GET['id'];
 
-// if (isset($player_id) && is_numeric($player_id)) {
-// 	make_signature($player_id);
-// }else{
-// 	header("HTTP/1.0 404 Not Found");
-// 	die('Page not found.');
-// }
+if (isset($player_id) && is_numeric($player_id)) {
+	make_signature($player_id);
+}else{
+	header("HTTP/1.0 404 Not Found");
+	die('Page not found.');
+}
 
 
 ?>
