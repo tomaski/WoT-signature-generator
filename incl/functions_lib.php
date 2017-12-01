@@ -92,7 +92,7 @@ function getTankStatistics($account_id){
 	$exp_tank_stats = getExpectedTankValues();
 
 	foreach($tank_stats as $tank){
-		$tank->wn8 = calculateTankWN8($tank, $exp_tank_stats[$tank->tank_id]);
+		$tank->wn8 = calculateTankWN8($tank->all, $exp_tank_stats[$tank->tank_id]);
 	}
 
 	return $tank_stats;
@@ -206,11 +206,11 @@ function calculateProgress($maxVal, $currVal, $barSize) {
  * @return integer               (decimal WN8 value)
  */
 function calculateTankWN8($tank_player, $tank_expected){
-	$rDAMAGE 	= ($tank_player->all->damage_dealt 				/ $tank_player->all->battles) / $tank_expected->expDamage;
-	$rSPOT 		= ($tank_player->all->spotted 					/ $tank_player->all->battles) / $tank_expected->expSpot;
-	$rFRAG 		= ($tank_player->all->frags 					/ $tank_player->all->battles) / $tank_expected->expFrag;
-	$rDEF 		= ($tank_player->all->dropped_capture_points 	/ $tank_player->all->battles) / $tank_expected->expDef;
-	$rWIN 		= ($tank_player->all->wins * 100				/ $tank_player->all->battles) / $tank_expected->expWinRate;
+	$rDAMAGE 	= ($tank_player->damage_dealt 				/ $tank_player->battles) / $tank_expected->expDamage;
+	$rSPOT 		= ($tank_player->spotted 					/ $tank_player->battles) / $tank_expected->expSpot;
+	$rFRAG 		= ($tank_player->frags 						/ $tank_player->battles) / $tank_expected->expFrag;
+	$rDEF 		= ($tank_player->dropped_capture_points 	/ $tank_player->battles) / $tank_expected->expDef;
+	$rWIN 		= ($tank_player->wins * 100					/ $tank_player->battles) / $tank_expected->expWinRate;
 
 
 	$rDAMAGEc	= max(0,						($rDAMAGE	- 0.22) / (1 - 0.22) );
@@ -227,5 +227,30 @@ function calculateTankWN8($tank_player, $tank_expected){
 
 	return round($WN8);
 }
+
+
+function calculateTankClassWN8($tank_player, $tank_expected){
+	$rDAMAGE 	= $tank_player->damage_dealt 				 / $tank_expected->expDamage;
+	$rSPOT 		= $tank_player->spotted 					 / $tank_expected->expSpot;
+	$rFRAG 		= $tank_player->frags 						 / $tank_expected->expFrag;
+	$rDEF 		= $tank_player->dropped_capture_points 	    / $tank_expected->expDef;
+	$rWIN 		= $tank_player->wins						/ ($tank_expected->expWinRate * 0.01);
+
+
+	$rDAMAGEc	= max(0,						($rDAMAGE	- 0.22) / (1 - 0.22) );
+	$rSPOTc		= max(0, min($rDAMAGEc + 0.1,  	($rSPOT		- 0.38) / (1 - 0.38)));
+	$rFRAGc		= max(0, min($rDAMAGEc + 0.2,  	($rFRAG		- 0.12) / (1 - 0.12)));
+	$rDEFc		= max(0, min($rDAMAGEc + 0.1,  	($rDEF		- 0.10) / (1 - 0.10)));
+	$rWINc		= max(0,						($rWIN		- 0.71) / (1 - 0.71) );
+	
+	$WN8 =  980 * $rDAMAGEc;
+	$WN8 += 210 * $rDAMAGEc * $rFRAGc;
+	$WN8 += 155 * $rFRAGc	* $rSPOTc;
+	$WN8 += 75  * $rDEFc	* $rFRAGc;
+	$WN8 += 145 * MIN(1.8,	  $rWINc);
+
+	return round($WN8);
+}
+
 
 ?>

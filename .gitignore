@@ -11,6 +11,6 @@ sftp-config.json
 test.php
 
 # config file
-#incl/config_incl.php
+incl/config_incl.php
 #.gitignore
 WoT_signatures.code-workspace

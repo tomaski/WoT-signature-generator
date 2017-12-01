@@ -1,6 +1,46 @@
 <?php
 
+class wn8_name
+{
+	static function getter($argument)
+	{
+		switch ($argument) {
 
+			case $argument <= 299:  	// 0-299
+				return "verybad";		// very bad
+
+			case $argument <= 449:  	// 300-449
+				return "bad";			// bad
+
+			case $argument <= 649:  	// 450-649
+				return "belowaverage";	// below average
+
+			case $argument <= 899:  	// 650-899
+				return "average";		// average
+
+			case $argument <= 1199: 	// 900-1199
+				return "aboveaverage";	// above average
+
+			case $argument <= 1599: 	// 1200-1599
+				return "good";			// good
+
+			case $argument <= 1999: 	// 1600-1999
+				return "verygood";		// very good
+
+			case $argument <= 2499: 	// 2000-2499
+				return "great";			// great
+
+			case $argument <= 2899: 	// 2500-2899
+				return "unicum";		// unicum
+
+			case $argument > 2900:  	// 2900+
+				return "superunicum";	// super unicum
+
+			default:
+				return "verybad";		// in case unknown value is passed
+		}
+	}
+}
 
 class wn8_color
 {
