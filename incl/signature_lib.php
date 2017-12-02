@@ -78,7 +78,8 @@ class signature
 
 		foreach($this->account_tank_stats as $this->tank_stats){
 	        $this->tank_id                	= $this->tank_stats->tank_id;
-	        $this->tank_battles           	= $this->tank_stats->all->battles;
+			$this->tank_battles           	= $this->tank_stats->all->battles;
+			if(property_exists($this->tank_details, $this->tank_id)){
 			$this->avgTier 					+= $this->tank_details->{$this->tank_id}->tier * $this->tank_battles;
 			$this->tankTier					= $this->tank_details->{$this->tank_id}->tier;
 
@@ -133,8 +134,9 @@ class signature
 	            $this->expected_frag       	+= 		 $this->exp_tank_stats[$this->tank_id]->expFrag * 	 $this->tank_battles;
 	            $this->expected_def        	+= 		 $this->exp_tank_stats[$this->tank_id]->expDef * 	 $this->tank_battles;
 	            $this->expected_win        	+= 0.01 * $this->exp_tank_stats[$this->tank_id]->expWinRate * $this->tank_battles;
-	        }
-	    }
+			}
+		}
+	    } // ------------------
 
 	    $this->avgDamage                    = $this->damage_dealt 				/ $this->expected_damage;
 	    $this->avgSpot                      = $this->spotted 					/ $this->expected_spot;

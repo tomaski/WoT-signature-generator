@@ -92,7 +92,9 @@ function getTankStatistics($account_id){
 	$exp_tank_stats = getExpectedTankValues();
 
 	foreach($tank_stats as $tank){
-		$tank->wn8 = calculateTankWN8($tank->all, $exp_tank_stats[$tank->tank_id]);
+		if(array_key_exists($tank->tank_id, $exp_tank_stats)){
+			$tank->wn8 = calculateTankWN8($tank->all, $exp_tank_stats[$tank->tank_id]);
+		}
 	}
 
 	return $tank_stats;
